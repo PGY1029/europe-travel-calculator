@@ -4,27 +4,90 @@
 <meta charset="UTF-8">
 <title>유럽 여행 예산 계산기</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-body { font-family: Arial; background:#f4f6f8; padding:20px; }
-h1 { text-align:center; }
-input { padding:8px; margin:5px 0; width:100%; }
+  <div class="container">
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+  padding:20px;
+}
+</div>
+h1 {
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.container {
+  max-width:900px;
+  margin:auto;
+  background:white;
+  color:black;
+  padding:25px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+input {
+  padding:10px;
+  margin:8px 0;
+  width:100%;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
 .filters button {
-  margin:3px; padding:6px 10px; border:none;
-  background:#007bff; color:white; border-radius:6px;
+  margin:4px;
+  padding:8px 12px;
+  border:none;
+  background:#667eea;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.filters button:hover {
+  transform:scale(1.05);
+  background:#5a67d8;
+}
+
+.card {
+  background:#f8f9fa;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  transition:0.2s;
+}
+
+.card:hover {
+  transform:translateY(-3px);
+  box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+
+button.calc {
+  width:100%;
+  padding:12px;
+  background:#28a745;
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+  margin-top:12px;
   cursor:pointer;
 }
-.card {
-  background:white; padding:10px; margin:5px 0;
-  border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);
+
+button.calc:hover {
+  background:#218838;
 }
-button.calc {
-  width:100%; padding:10px;
-  background:#28a745; color:white;
-  border:none; border-radius:8px; margin-top:10px;
+
+.result {
+  margin-top:15px;
+  font-weight:bold;
+  font-size:18px;
 }
-.result { margin-top:15px; font-weight:bold; }
 </style>
+  
 </head>
 
 <body>
