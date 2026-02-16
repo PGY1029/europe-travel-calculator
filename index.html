@@ -2,21 +2,18 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>유럽 여행 예산 계산기</title>
+<title>Europe Travel Budget Calculator</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-  <div class="container">
 body {
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(135deg,#667eea,#764ba2);
   color:white;
   padding:20px;
 }
-</div>
-h1 {
-  text-align:center;
-  margin-bottom:20px;
-}
+
+h1 { text-align:center; }
 
 .container {
   max-width:900px;
@@ -28,28 +25,12 @@ h1 {
   box-shadow:0 10px 30px rgba(0,0,0,0.3);
 }
 
-input {
+input, select {
   padding:10px;
   margin:8px 0;
   width:100%;
   border-radius:8px;
   border:1px solid #ccc;
-}
-
-.filters button {
-  margin:4px;
-  padding:8px 12px;
-  border:none;
-  background:#667eea;
-  color:white;
-  border-radius:8px;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-.filters button:hover {
-  transform:scale(1.05);
-  background:#5a67d8;
 }
 
 .card {
@@ -65,7 +46,7 @@ input {
   box-shadow:0 5px 15px rgba(0,0,0,0.2);
 }
 
-button.calc {
+button {
   width:100%;
   padding:12px;
   background:#28a745;
@@ -77,9 +58,7 @@ button.calc {
   cursor:pointer;
 }
 
-button.calc:hover {
-  background:#218838;
-}
+button:hover { background:#218838; }
 
 .result {
   margin-top:15px;
@@ -87,148 +66,91 @@ button.calc:hover {
   font-size:18px;
 }
 </style>
-  
 </head>
 
 <body>
 
-<h1>🌍 유럽 여행 비용 계산기</h1>
+<h1>🌍 Europe Travel Budget Calculator</h1>
 
-<input type="text" id="search" placeholder="국가 검색..." onkeyup="filterCountries()">
-
-<div class="filters">
-<button onclick="filterRegion('all')">전체</button>
-<button onclick="filterRegion('west')">서유럽</button>
-<button onclick="filterRegion('south')">남유럽</button>
-<button onclick="filterRegion('north')">북유럽</button>
-<button onclick="filterRegion('east')">동유럽</button>
-</div>
+<div class="container">
 
 <input type="number" id="days" placeholder="여행 일수 입력">
 
-<div id="countries"></div>
+<select id="destination">
+  <option value="CDG">프랑스 (파리)</option>
+  <option value="FRA">독일 (프랑크푸르트)</option>
+  <option value="FCO">이탈리아 (로마)</option>
+  <option value="MAD">스페인 (마드리드)</option>
+  <option value="AMS">네덜란드 (암스테르담)</option>
+</select>
 
-<button class="calc" onclick="calculate()">총 비용 계산</button>
+<button onclick="calculate()">총 비용 계산</button>
 
 <div class="result" id="result"></div>
 
 <canvas id="chart"></canvas>
 
+</div>
+
 <script>
 
-// 국가 데이터 (1일 평균 유로 기준)
-const countryData = [
-{ name:"프랑스", cost:120, region:"west"},
-{ name:"독일", cost:110, region:"west"},
-{ name:"네덜란드", cost:130, region:"west"},
-{ name:"벨기에", cost:115, region:"west"},
-{ name:"오스트리아", cost:120, region:"west"},
-{ name:"이탈리아", cost:110, region:"south"},
-{ name:"스페인", cost:100, region:"south"},
-{ name:"포르투갈", cost:95, region:"south"},
-{ name:"그리스", cost:90, region:"south"},
-{ name:"스위스", cost:180, region:"north"},
-{ name:"스웨덴", cost:150, region:"north"},
-{ name:"노르웨이", cost:170, region:"north"},
-{ name:"덴마크", cost:140, region:"north"},
-{ name:"핀란드", cost:145, region:"north"},
-{ name:"체코", cost:80, region:"east"},
-{ name:"헝가리", cost:75, region:"east"},
-{ name:"폴란드", cost:70, region:"east"},
-{ name:"크로아티아", cost:85, region:"east"},
-{ name:"슬로베니아", cost:90, region:"east"},
-];
+// 1일 평균 유로 예산
+const dailyCostEUR = 120;
 
-const container = document.getElementById("countries");
-
-countryData.forEach(country => {
-  const div = document.createElement("div");
-  div.className = "card";
-  div.setAttribute("data-region", country.region);
-  div.innerHTML = `
-    <input type="checkbox" value="${country.cost}">
-    ${country.name} (1일 평균 €${country.cost})
-  `;
-  container.appendChild(div);
-});
-
-// 검색 기능
-function filterCountries(){
-  const keyword = document.getElementById("search").value.toLowerCase();
-  const cards = document.querySelectorAll(".card");
-  cards.forEach(card=>{
-    card.style.display = card.innerText.toLowerCase().includes(keyword) ? "block" : "none";
-  });
-}
-
-// 지역 필터
-function filterRegion(region){
-  const cards = document.querySelectorAll(".card");
-  cards.forEach(card=>{
-    if(region==="all" || card.dataset.region===region){
-      card.style.display="block";
-    } else {
-      card.style.display="none";
-    }
-  });
-}
-
-// 환율 가져오기 (무료 API)
+// 환율 API
 async function fetchExchangeRate() {
   const res = await fetch('https://api.frankfurter.app/latest?from=EUR&to=KRW');
   const data = await res.json();
   return data.rates.KRW;
 }
 
-// 항공권 평균가 (임시 평균값 - API 없이 작동)
-function getEstimatedFlightPrice() {
-  return 900; // 평균 900유로 가정
+// ⚠ 실제 API 대신 임시 항공권 평균가
+async function getFlightEstimate() {
+  return 900; // 평균 900유로 (임시값)
 }
 
-let chart;
+// 메인 계산 함수
+async function calculate() {
 
-async function calculate(){
   const days = document.getElementById("days").value;
-  const checked = document.querySelectorAll("input[type=checkbox]:checked");
+  const destination = document.getElementById("destination").value;
 
-  if (!days || checked.length === 0) {
-    alert("여행 일수와 국가를 선택하세요!");
+  if(!days) {
+    alert("여행 일수를 입력하세요!");
     return;
   }
 
   const rate = await fetchExchangeRate();
 
-  let totalKRW = 0;
-  let labels = [];
-  let dataArr = [];
+  // 숙박/생활비
+  const stayEUR = dailyCostEUR * days;
+  const stayKRW = stayEUR * rate;
 
-  checked.forEach(c=>{
-    const costEUR = c.value * days;
-    const costKRW = costEUR * rate;
-    totalKRW += costKRW;
-
-    labels.push(c.parentElement.innerText);
-    dataArr.push(Math.round(costKRW));
-  });
-
-  // 항공권 추가
-  const flightEUR = getEstimatedFlightPrice();
+  // 항공권
+  const flightEUR = await getFlightEstimate();
   const flightKRW = flightEUR * rate;
-  totalKRW += flightKRW;
+
+  const totalKRW = stayKRW + flightKRW;
 
   document.getElementById("result").innerHTML =
     `총 예상 비용: ₩${Math.round(totalKRW).toLocaleString()}
-     <br>(항공권 포함 약 ₩${Math.round(flightKRW).toLocaleString()})`;
+     <br>(체류비 ₩${Math.round(stayKRW).toLocaleString()} + 항공권 ₩${Math.round(flightKRW).toLocaleString()})`;
+
+  renderChart(stayKRW, flightKRW);
+}
+
+let chart;
+
+function renderChart(stay, flight) {
 
   if(chart) chart.destroy();
 
   chart = new Chart(document.getElementById("chart"), {
-    type:"bar",
+    type:"doughnut",
     data:{
-      labels:[...labels, "항공권"],
+      labels:["체류비","항공권"],
       datasets:[{
-        label:"비용 (원)",
-        data:[...dataArr, Math.round(flightKRW)]
+        data:[stay, flight]
       }]
     }
   });
